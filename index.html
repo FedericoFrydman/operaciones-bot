@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Nueva Operacion</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+font-family: -apple-system, BlinkMacSystemFont, ‘Segoe UI’, Roboto, sans-serif;
+background: var(–tg-theme-bg-color, #1a1a2e);
+color: var(–tg-theme-text-color, #ffffff);
+padding: 16px;
+padding-bottom: 100px;
+min-height: 100vh;
+}
+
+h1 {
+font-size: 20px;
+text-align: center;
+margin-bottom: 20px;
+}
+
+.field { margin-bottom: 16px; }
+
+label {
+display: block;
+font-size: 12px;
+font-weight: 600;
+margin-bottom: 6px;
+color: var(–tg-theme-hint-color, #aaa);
+text-transform: uppercase;
+letter-spacing: 0.5px;
+}
+
+input[type=“number”], input[type=“text”], textarea {
+width: 100%;
+padding: 12px;
+border-radius: 10px;
+border: 1px solid var(–tg-theme-hint-color, #333);
+background: var(–tg-theme-secondary-bg-color, #16213e);
+color: var(–tg-theme-text-color, #fff);
+font-size: 16px;
+outline: none;
+-webkit-appearance: none;
+}
+
+input:focus, textarea:focus {
+border-color: var(–tg-theme-button-color, #3390ec);
+}
+
+textarea { height: 60px; resize: none; }
+
+/* Tipo buttons */
+.tipo-buttons { display: flex; gap: 10px; }
+
+.tipo-btn {
+flex: 1;
+padding: 14px;
+border-radius: 10px;
+border: 2px solid var(–tg-theme-hint-color, #333);
+background: var(–tg-theme-secondary-bg-color, #16213e);
+color: var(–tg-theme-text-color, #fff);
+font-size: 15px;
+font-weight: 600;
+text-align: center;
+cursor: pointer;
+transition: all 0.15s;
+}
+
+.tipo-btn.active {
+border-color: var(–tg-theme-button-color, #3390ec);
+background: var(–tg-theme-button-color, #3390ec);
+color: var(–tg-theme-button-text-color, #fff);
+}
+
+/* Search dropdown */
+.search-container { position: relative; }
+
+.search-results {
+position: absolute;
+top: 100%;
+left: 0; right: 0;
+background: var(–tg-theme-secondary-bg-color, #16213e);
+border: 1px solid var(–tg-theme-hint-color, #333);
+border-radius: 10px;
+margin-top: 4px;
+max-height: 200px;
+overflow-y: auto;
+z-index: 100;
+display: none;
+}
+
+.search-results.active { display: block; }
+
+.search-result-item {
+padding: 10px 12px;
+cursor: pointer;
+font-size: 15px;
+border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.search-result-item:last-child { border-bottom: none; }
+.search-result-item:active { background: var(–tg-theme-button-color, #3390ec); }
+
+.selected-tag {
+display: inline-flex;
+align-items: center;
+gap: 8px;
+padding: 6px 12px;
+background: var(–tg-theme-button-color, #3390ec);
+color: var(–tg-theme-button-text-color, #fff);
+border-radius: 8px;
+margin-top: 6px;
+font-size: 14px;
+}
+
+.selected-tag .clear-btn {
+cursor: pointer;
+font-weight: bold;
+opacity: 0.8;
+}
+
+.error-msg {
+color: #e74c3c;
+font-size: 12px;
+margin-top: 4px;
+display: none;
+}
+
+.loading-screen {
+display: flex;
+align-items: center;
+justify-content: center;
+height: 80vh;
+font-size: 16px;
+color: var(–tg-theme-hint-color, #aaa);
+}
+
+#formContainer { display: none; }
+</style>
+
+</head>
+<body>
+
+<div id="loadingScreen" class="loading-screen">Cargando datos...</div>
+
+<div id="formContainer">
+  <h1>📋 Nueva Operacion</h1>
+
+  <div class="field">
+    <label>Tipo</label>
+    <div class="tipo-buttons" id="tipoButtons"></div>
+    <div class="error-msg" id="tipoError">Selecciona un tipo</div>
+  </div>
+
+  <div class="field">
+    <label>Monto</label>
+    <input type="number" id="monto" placeholder="Ej: 5000" inputmode="numeric">
+    <div class="error-msg" id="montoError">Ingresa un monto valido</div>
+  </div>
+
+  <div class="field">
+    <label>Cliente</label>
+    <div class="search-container">
+      <input type="text" id="clienteSearch" placeholder="Buscar cliente..." autocomplete="off">
+      <div class="search-results" id="clienteResults"></div>
+    </div>
+    <div id="clienteSelected"></div>
+    <div class="error-msg" id="clienteError">Selecciona un cliente</div>
+  </div>
+
+  <div class="field">
+    <label>Metodo de Pago</label>
+    <div class="search-container">
+      <input type="text" id="metodoSearch" placeholder="Buscar metodo..." autocomplete="off">
+      <div class="search-results" id="metodoResults"></div>
+    </div>
+    <div id="metodoSelected"></div>
+    <div class="error-msg" id="metodoError">Selecciona un metodo de pago</div>
+  </div>
+
+  <div class="field">
+    <label>Notas (opcional)</label>
+    <textarea id="notas" placeholder="Ej: BCP a Nicothegoat"></textarea>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// CONFIGURACION - Pega aca tu URL /exec de Apps Script
+// ============================================================
+var API_URL = "https://script.google.com/macros/s/AKfycbz_Kf5iNIwm4jadZwaCoLdE4hVntcxeURf4vFj8I-UOpUqM1YAL6-dVO_GtVTt461s/exec";
+
+// ============================================================
+// TELEGRAM WEB APP
+// ============================================================
+var tg = window.Telegram.WebApp;
+tg.ready();
+tg.expand();
+
+var listas = {};
+var selectedTipo = "";
+var selectedCliente = "";
+var selectedMetodo = "";
+
+// ============================================================
+// CARGAR DATOS
+// ============================================================
+fetch(API_URL + "?action=listas")
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    listas = data;
+    buildForm();
+    document.getElementById("loadingScreen").style.display = "none";
+    document.getElementById("formContainer").style.display = "block";
+    tg.MainButton.setText("✅ CONFIRMAR");
+    tg.MainButton.show();
+  })
+  .catch(function(err) {
+    document.getElementById("loadingScreen").textContent = "Error al cargar: " + err;
+  });
+
+// ============================================================
+// CONSTRUIR FORMULARIO
+// ============================================================
+function buildForm() {
+  // Botones de tipo
+  var container = document.getElementById("tipoButtons");
+  listas.tipos.forEach(function(tipo) {
+    var btn = document.createElement("div");
+    btn.className = "tipo-btn";
+    btn.textContent = tipo;
+    btn.onclick = function() {
+      document.querySelectorAll(".tipo-btn").forEach(function(b) { b.classList.remove("active"); });
+      btn.classList.add("active");
+      selectedTipo = tipo;
+      hide("tipoError");
+    };
+    container.appendChild(btn);
+  });
+
+  // Buscadores
+  setupSearch("clienteSearch", "clienteResults", "clienteSelected", listas.clientes, function(val) {
+    selectedCliente = val;
+    hide("clienteError");
+  });
+
+  setupSearch("metodoSearch", "metodoResults", "metodoSelected", listas.metodos, function(val) {
+    selectedMetodo = val;
+    hide("metodoError");
+  });
+}
+
+// ============================================================
+// BUSCADOR CON DROPDOWN
+// ============================================================
+function setupSearch(inputId, resultsId, selectedId, list, onSelect) {
+  var input = document.getElementById(inputId);
+  var results = document.getElementById(resultsId);
+  var selectedDiv = document.getElementById(selectedId);
+
+  input.addEventListener("input", function() {
+    var q = this.value.toLowerCase().trim();
+    results.innerHTML = "";
+
+    if (q.length === 0) {
+      results.classList.remove("active");
+      return;
+    }
+
+    var matches = [];
+    for (var i = 0; i < list.length && matches.length < 8; i++) {
+      if (list[i].toLowerCase().indexOf(q) >= 0) {
+        matches.push(list[i]);
+      }
+    }
+
+    if (matches.length === 0) {
+      results.classList.remove("active");
+      return;
+    }
+
+    matches.forEach(function(match) {
+      var item = document.createElement("div");
+      item.className = "search-result-item";
+      item.textContent = match;
+      item.onclick = function() {
+        onSelect(match);
+        input.value = "";
+        results.classList.remove("active");
+        selectedDiv.innerHTML = "";
+        var tag = document.createElement("span");
+        tag.className = "selected-tag";
+        tag.innerHTML = match + " <span class='clear-btn'>✕</span>";
+        tag.querySelector(".clear-btn").onclick = function() {
+          selectedDiv.innerHTML = "";
+          if (selectedId === "clienteSelected") selectedCliente = "";
+          if (selectedId === "metodoSelected") selectedMetodo = "";
+        };
+        selectedDiv.appendChild(tag);
+      };
+      results.appendChild(item);
+    });
+
+    results.classList.add("active");
+  });
+
+  document.addEventListener("click", function(e) {
+    if (!input.contains(e.target) && !results.contains(e.target)) {
+      results.classList.remove("active");
+    }
+  });
+}
+
+// ============================================================
+// CONFIRMAR
+// ============================================================
+tg.MainButton.onClick(function() {
+  var valid = true;
+
+  if (!selectedTipo) { show("tipoError"); valid = false; } else { hide("tipoError"); }
+
+  var monto = document.getElementById("monto").value;
+  if (!monto || isNaN(parseFloat(monto)) || parseFloat(monto) <= 0) {
+    show("montoError"); valid = false;
+  } else { hide("montoError"); }
+
+  if (!selectedCliente) { show("clienteError"); valid = false; } else { hide("clienteError"); }
+  if (!selectedMetodo) { show("metodoError"); valid = false; } else { hide("metodoError"); }
+
+  if (!valid) return;
+
+  tg.MainButton.showProgress();
+  tg.MainButton.setText("Guardando...");
+
+  var userName = "Usuario";
+  try {
+    if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+      userName = tg.initDataUnsafe.user.first_name;
+      if (tg.initDataUnsafe.user.last_name) {
+        userName += " " + tg.initDataUnsafe.user.last_name;
+      }
+    }
+  } catch(e) {}
+
+  fetch(API_URL, {
+    method: "POST",
+    headers: {"Content-Type": "text/plain"},
+    body: JSON.stringify({
+      tipo: selectedTipo,
+      monto: monto,
+      cliente: selectedCliente,
+      metodo: selectedMetodo,
+      notas: document.getElementById("notas").value || "",
+      userName: userName
+    })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(result) {
+    tg.MainButton.hideProgress();
+    if (result.ok) {
+      tg.showAlert("✅ Operacion registrada en fila " + result.fila);
+      setTimeout(function() { tg.close(); }, 1500);
+    } else {
+      tg.MainButton.setText("✅ CONFIRMAR");
+      tg.showAlert("Error al guardar: " + (result.error || ""));
+    }
+  })
+  .catch(function(err) {
+    tg.MainButton.hideProgress();
+    tg.MainButton.setText("✅ CONFIRMAR");
+    tg.showAlert("Error de conexion: " + err);
+  });
+});
+
+function show(id) { document.getElementById(id).style.display = "block"; }
+function hide(id) { document.getElementById(id).style.display = "none"; }
+</script>
+
+</body>
+</html>
