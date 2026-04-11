@@ -380,7 +380,9 @@ tg.MainButton.onClick(function() {
       cliente: selectedCliente,
       metodo: selectedMetodo,
       notas: document.getElementById("notas").value || "",
-      userName: userName
+      userName: userName,
+      telegramUserId: tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : null
+
     })
   })
   .then(function(r) { return r.json(); })
