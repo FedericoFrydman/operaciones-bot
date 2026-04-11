@@ -7,175 +7,149 @@
 <title>Nueva Operacion</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-  :root {
-    --bg: #0e0e0e;
-    --card: #1c1c1e;
-    --border: #3a3a3c;
-    --text: #ffffff;
-    --hint: #8e8e93;
-    --accent: #3390ec;
-    --accent-text: #ffffff;
-    --error: #ff453a;
-    --input-bg: #2c2c2e;
-  }
-
-- { box-sizing: border-box; margin: 0; padding: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-font-family: -apple-system, BlinkMacSystemFont, ‘Segoe UI’, Roboto, sans-serif;
-background: var(–bg);
-color: var(–text);
-padding: 16px;
-padding-bottom: 100px;
-min-height: 100vh;
+font-family: -apple-system, BlinkMacSystemFont, ‘Segoe UI’, Roboto, sans-serif !important;
+background-color: #0e0e0e !important;
+color: #ffffff !important;
+padding: 16px !important;
+padding-bottom: 100px !important;
+min-height: 100vh !important;
 }
 
 h1 {
-font-size: 22px;
-text-align: center;
-margin-bottom: 24px;
-color: var(–text);
+font-size: 22px !important;
+text-align: center !important;
+margin-bottom: 24px !important;
+color: #ffffff !important;
 }
 
-.field { margin-bottom: 18px; }
+.field { margin-bottom: 18px !important; position: relative !important; z-index: 1 !important; }
+.field.z-high { z-index: 20 !important; }
+.field.z-med { z-index: 10 !important; }
 
 label {
-display: block;
-font-size: 13px;
-font-weight: 600;
-margin-bottom: 8px;
-color: var(–hint);
-text-transform: uppercase;
-letter-spacing: 0.5px;
+display: block !important;
+font-size: 13px !important;
+font-weight: 600 !important;
+margin-bottom: 8px !important;
+color: #8e8e93 !important;
+text-transform: uppercase !important;
+letter-spacing: 0.5px !important;
 }
 
 input[type=“number”], input[type=“text”], textarea {
-width: 100%;
-padding: 14px;
-border-radius: 12px;
-border: 1px solid var(–border);
-background: var(–input-bg);
-color: var(–text);
-font-size: 16px;
-outline: none;
--webkit-appearance: none;
+width: 100% !important;
+padding: 14px !important;
+border-radius: 12px !important;
+border: 1px solid #3a3a3c !important;
+background-color: #2c2c2e !important;
+color: #ffffff !important;
+font-size: 16px !important;
+outline: none !important;
+-webkit-appearance: none !important;
 }
 
 input::placeholder, textarea::placeholder {
-color: var(–hint);
+color: #636366 !important;
 }
 
 input:focus, textarea:focus {
-border-color: var(–accent);
+border-color: #3390ec !important;
 }
 
-textarea { height: 70px; resize: none; }
+textarea { height: 70px !important; resize: none !important; }
 
-.tipo-buttons { display: flex; gap: 10px; }
+.tipo-buttons { display: flex !important; gap: 10px !important; }
 
 .tipo-btn {
-flex: 1;
-padding: 16px;
-border-radius: 12px;
-border: 2px solid var(–border);
-background: var(–input-bg);
-color: var(–text);
-font-size: 15px;
-font-weight: 600;
-text-align: center;
-cursor: pointer;
-transition: all 0.15s;
+flex: 1 !important;
+padding: 16px !important;
+border-radius: 12px !important;
+border: 2px solid #3a3a3c !important;
+background-color: #2c2c2e !important;
+color: #ffffff !important;
+font-size: 15px !important;
+font-weight: 600 !important;
+text-align: center !important;
+cursor: pointer !important;
 }
 
 .tipo-btn.active {
-border-color: var(–accent);
-background: var(–accent);
-color: var(–accent-text);
+border-color: #3390ec !important;
+background-color: #3390ec !important;
+color: #ffffff !important;
 }
 
-.search-container { position: relative; }
+.search-container { position: relative !important; }
 
 .search-results {
-position: absolute;
-top: 100%;
-left: 0; right: 0;
-background: var(–card);
-border: 1px solid var(–border);
-border-radius: 12px;
-margin-top: 4px;
-max-height: 200px;
-overflow-y: auto;
-z-index: 100;
-display: none;
+position: absolute !important;
+top: 100% !important;
+left: 0 !important;
+right: 0 !important;
+background-color: #1c1c1e !important;
+border: 1px solid #48484a !important;
+border-radius: 12px !important;
+margin-top: 4px !important;
+max-height: 200px !important;
+overflow-y: auto !important;
+z-index: 9999 !important;
+display: none !important;
+box-shadow: 0 8px 24px rgba(0,0,0,0.8) !important;
 }
 
-.search-results.active { display: block; }
-
-.search-result-item {
-padding: 12px 14px;
-cursor: pointer;
-font-size: 15px;
-color: var(–text);
-border-bottom: 1px solid var(–border);
-}
-
-.search-result-item:last-child { border-bottom: none; }
-
-.search-result-item:active {
-background: var(–accent);
-color: var(–accent-text);
-}
+.search-results.active { display: block !important; }
 
 .selected-tag {
-display: inline-flex;
-align-items: center;
-gap: 8px;
-padding: 8px 14px;
-background: var(–accent);
-color: var(–accent-text);
-border-radius: 10px;
-margin-top: 8px;
-font-size: 14px;
-font-weight: 500;
+display: inline-flex !important;
+align-items: center !important;
+gap: 8px !important;
+padding: 8px 14px !important;
+background-color: #3390ec !important;
+color: #ffffff !important;
+border-radius: 10px !important;
+margin-top: 8px !important;
+font-size: 14px !important;
+font-weight: 500 !important;
 }
 
 .selected-tag .clear-btn {
-cursor: pointer;
-font-weight: bold;
-opacity: 0.8;
-font-size: 16px;
+cursor: pointer !important;
+font-weight: bold !important;
+opacity: 0.8 !important;
+font-size: 16px !important;
 }
 
 .error-msg {
-color: var(–error);
-font-size: 12px;
-margin-top: 6px;
+color: #ff453a !important;
+font-size: 12px !important;
+margin-top: 6px !important;
 display: none;
 }
 
 .loading-screen {
-display: flex;
-flex-direction: column;
-align-items: center;
-justify-content: center;
-height: 80vh;
-font-size: 16px;
-color: var(–hint);
-gap: 12px;
+display: flex !important;
+flex-direction: column !important;
+align-items: center !important;
+justify-content: center !important;
+height: 80vh !important;
+font-size: 16px !important;
+color: #8e8e93 !important;
+gap: 12px !important;
 }
 
 .spinner {
-width: 32px;
-height: 32px;
-border: 3px solid var(–border);
-border-top: 3px solid var(–accent);
-border-radius: 50%;
-animation: spin 0.8s linear infinite;
+width: 32px !important;
+height: 32px !important;
+border: 3px solid #3a3a3c !important;
+border-top: 3px solid #3390ec !important;
+border-radius: 50% !important;
+animation: spin 0.8s linear infinite !important;
 }
 
-@keyframes spin {
-to { transform: rotate(360deg); }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 
 #formContainer { display: none; }
 </style>
@@ -203,7 +177,7 @@ to { transform: rotate(360deg); }
     <div class="error-msg" id="montoError">Ingresa un monto valido</div>
   </div>
 
-  <div class="field">
+  <div class="field z-high">
     <label>Cliente</label>
     <div class="search-container">
       <input type="text" id="clienteSearch" placeholder="Buscar cliente..." autocomplete="off">
@@ -213,7 +187,7 @@ to { transform: rotate(360deg); }
     <div class="error-msg" id="clienteError">Selecciona un cliente</div>
   </div>
 
-  <div class="field">
+  <div class="field z-med">
     <label>Metodo de Pago</label>
     <div class="search-container">
       <input type="text" id="metodoSearch" placeholder="Buscar metodo..." autocomplete="off">
@@ -235,6 +209,8 @@ var API_URL = "https://script.google.com/macros/s/AKfycbz_Kf5iNIwm4jadZwaCoLdE4h
 var tg = window.Telegram.WebApp;
 tg.ready();
 tg.expand();
+tg.setBackgroundColor("#0e0e0e");
+tg.setHeaderColor("#0e0e0e");
 
 var listas = {};
 var selectedTipo = "";
@@ -261,9 +237,16 @@ function buildForm() {
     var btn = document.createElement("div");
     btn.className = "tipo-btn";
     btn.textContent = tipo;
+    btn.style.cssText = "flex:1;padding:16px;border-radius:12px;border:2px solid #3a3a3c;background-color:#2c2c2e;color:#ffffff;font-size:15px;font-weight:600;text-align:center;cursor:pointer;";
     btn.onclick = function() {
-      document.querySelectorAll(".tipo-btn").forEach(function(b) { b.classList.remove("active"); });
+      document.querySelectorAll(".tipo-btn").forEach(function(b) {
+        b.classList.remove("active");
+        b.style.backgroundColor = "#2c2c2e";
+        b.style.borderColor = "#3a3a3c";
+      });
       btn.classList.add("active");
+      btn.style.backgroundColor = "#3390ec";
+      btn.style.borderColor = "#3390ec";
       selectedTipo = tipo;
       hide("tipoError");
     };
@@ -309,20 +292,23 @@ function setupSearch(inputId, resultsId, selectedId, list, onSelect) {
 
     matches.forEach(function(match) {
       var item = document.createElement("div");
-      item.className = "search-result-item";
       item.textContent = match;
+      item.style.cssText = "padding:12px 14px;cursor:pointer;font-size:15px;color:#ffffff;background-color:#1c1c1e;border-bottom:1px solid #2c2c2e;";
+      item.ontouchstart = function() { this.style.backgroundColor = "#3390ec"; };
+      item.ontouchend = function() { this.style.backgroundColor = "#1c1c1e"; };
       item.onclick = function() {
         onSelect(match);
         input.value = "";
         results.classList.remove("active");
         selectedDiv.innerHTML = "";
         var tag = document.createElement("span");
-        tag.className = "selected-tag";
+        tag.style.cssText = "display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background-color:#3390ec;color:#ffffff;border-radius:10px;margin-top:8px;font-size:14px;font-weight:500;";
         tag.textContent = match + " ";
         var clearBtn = document.createElement("span");
-        clearBtn.className = "clear-btn";
         clearBtn.textContent = "✕";
-        clearBtn.onclick = function() {
+        clearBtn.style.cssText = "cursor:pointer;font-weight:bold;opacity:0.8;font-size:16px;";
+        clearBtn.onclick = function(e) {
+          e.stopPropagation();
           selectedDiv.innerHTML = "";
           if (selectedId === "clienteSelected") selectedCliente = "";
           if (selectedId === "metodoSelected") selectedMetodo = "";
@@ -382,18 +368,17 @@ tg.MainButton.onClick(function() {
       notas: document.getElementById("notas").value || "",
       userName: userName,
       telegramUserId: tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : null
-
     })
   })
   .then(function(r) { return r.json(); })
   .then(function(result) {
     tg.MainButton.hideProgress();
     if (result.ok) {
-      tg.showAlert("✅ Operacion registrada en fila " + result.fila);
+      tg.showAlert("Operacion registrada en fila " + result.fila);
       setTimeout(function() { tg.close(); }, 1500);
     } else {
       tg.MainButton.setText("✅ CONFIRMAR");
-      tg.showAlert("Error al guardar: " + (result.error || ""));
+      tg.showAlert("Error: " + (result.error || ""));
     }
   })
   .catch(function(err) {
