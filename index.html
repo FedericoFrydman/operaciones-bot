@@ -222,7 +222,7 @@ fetch(API_URL + "?action=listas")
   .then(function(data) {
     listas = data;
     buildForm();
-    document.getElementById("loadingScreen").style.display = "none";
+    document.getElementById("loadingScreen").style.cssText = "display:none !important";
     document.getElementById("formContainer").style.display = "block";
     tg.MainButton.setText("✅ CONFIRMAR");
     tg.MainButton.show();
