@@ -183,7 +183,7 @@ animation: spin 0.8s linear infinite !important;
   </div>
 
   <div class="field z-high">
-    <label>Cliente</label>
+    <label>Cliente (opcional)</label>
     <div class="search-container">
       <input type="text" id="clienteSearch" placeholder="Buscar cliente..." autocomplete="off">
       <div class="search-results" id="clienteResults"></div>
@@ -344,7 +344,7 @@ tg.MainButton.onClick(function() {
     show("montoError"); valid = false;
   } else { hide("montoError"); }
 
-  if (!selectedCliente) { show("clienteError"); valid = false; } else { hide("clienteError"); }
+  hide("clienteError");
   if (!selectedMetodo) { show("metodoError"); valid = false; } else { hide("metodoError"); }
 
   if (!valid) return;
