@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="es">
 <head>
 <meta charset="utf-8">
@@ -8,180 +7,152 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-font-family: -apple-system, BlinkMacSystemFont, ‘Segoe UI’, Roboto, sans-serif !important;
-background-color: #0e0e0e !important;
-color: #ffffff !important;
-padding: 16px !important;
-padding-bottom: 100px !important;
-min-height: 100vh !important;
-}
-
-h1 {
-font-size: 22px !important;
-text-align: center !important;
-margin-bottom: 24px !important;
-color: #ffffff !important;
-}
-
-.field { margin-bottom: 18px !important; position: relative !important; z-index: 1 !important; }
-.field.z-high { z-index: 20 !important; }
-.field.z-med { z-index: 10 !important; }
-
-label {
-display: block !important;
-font-size: 13px !important;
-font-weight: 600 !important;
-margin-bottom: 8px !important;
-color: #8e8e93 !important;
-text-transform: uppercase !important;
-letter-spacing: 0.5px !important;
-}
-
-input[type=“number”], input[type=“text”], textarea {
-width: 100% !important;
-padding: 14px !important;
-border-radius: 12px !important;
-border: 1px solid #3a3a3c !important;
-background-color: #2c2c2e !important;
-color: #ffffff !important;
-font-size: 16px !important;
-outline: none !important;
--webkit-appearance: none !important;
-}
-
-input::placeholder, textarea::placeholder {
-color: #636366 !important;
-}
-
-input:focus, textarea:focus {
-border-color: #3390ec !important;
-}
-
-input#monto, input#clienteSearch, input#metodoSearch {
- padding: 4px 10px !important;
- border-radius: 8px !important;
-}
-
-textarea { height: 70px !important; resize: none !important; }
-
-.tipo-buttons { display: flex !important; gap: 10px !important; }
-
-.tipo-btn {
-flex: 1 !important;
-padding: 16px !important;
-border-radius: 12px !important;
-border: 2px solid #3a3a3c !important;
-background-color: #2c2c2e !important;
-color: #ffffff !important;
-font-size: 15px !important;
-font-weight: 600 !important;
-text-align: center !important;
-cursor: pointer !important;
-}
-
-.tipo-btn.active {
-border-color: #3390ec !important;
-background-color: #3390ec !important;
-color: #ffffff !important;
-}
-
-.search-container { position: relative !important; }
-
-.search-results {
-position: absolute !important;
-top: 100% !important;
-left: 0 !important;
-right: 0 !important;
-background-color: #1c1c1e !important;
-border: 1px solid #48484a !important;
-border-radius: 12px !important;
-margin-top: 4px !important;
-max-height: 200px !important;
-overflow-y: auto !important;
-z-index: 9999 !important;
-display: none !important;
-box-shadow: 0 8px 24px rgba(0,0,0,0.8) !important;
-}
-
-.search-results.active { display: block !important; }
-
-.selected-tag {
-display: inline-flex !important;
-align-items: center !important;
-gap: 8px !important;
-padding: 8px 14px !important;
-background-color: #3390ec !important;
-color: #ffffff !important;
-border-radius: 10px !important;
-margin-top: 8px !important;
-font-size: 14px !important;
-font-weight: 500 !important;
-}
-
-.selected-tag .clear-btn {
-cursor: pointer !important;
-font-weight: bold !important;
-opacity: 0.8 !important;
-font-size: 16px !important;
-}
-
-.error-msg {
-color: #ff453a !important;
-font-size: 12px !important;
-margin-top: 6px !important;
-display: none;
-}
-
-.loading-screen {
-display: flex !important;
-flex-direction: column !important;
-align-items: center !important;
-justify-content: center !important;
-height: 80vh !important;
-font-size: 16px !important;
-color: #8e8e93 !important;
-gap: 12px !important;
-}
-
-.spinner {
-width: 32px !important;
-height: 32px !important;
-border: 3px solid #3a3a3c !important;
-border-top: 3px solid #3390ec !important;
-border-radius: 50% !important;
-animation: spin 0.8s linear infinite !important;
-}
-
-@keyframes spin { to { transform: rotate(360deg); } }
-
-#formContainer { display: none; }
+ 
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    background-color: #0e0e0e !important;
+    color: #ffffff !important;
+    padding: 16px !important;
+    padding-bottom: 100px !important;
+    min-height: 100vh !important;
+  }
+ 
+  h1 {
+    font-size: 22px !important;
+    text-align: center !important;
+    margin-bottom: 16px !important;
+    color: #ffffff !important;
+  }
+ 
+  .field { margin-bottom: 18px !important; position: relative !important; z-index: 1 !important; }
+  .field.z-high { z-index: 20 !important; }
+  .field.z-med { z-index: 10 !important; }
+ 
+  label {
+    display: block !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    margin-bottom: 8px !important;
+    color: #8e8e93 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+  }
+ 
+  input[type="text"], textarea {
+    width: 100% !important;
+    padding: 14px !important;
+    border-radius: 12px !important;
+    border: 1px solid #3a3a3c !important;
+    background-color: #2c2c2e !important;
+    color: #ffffff !important;
+    font-size: 16px !important;
+    outline: none !important;
+    -webkit-appearance: none !important;
+  }
+ 
+  input::placeholder, textarea::placeholder { color: #636366 !important; }
+  input:focus, textarea:focus { border-color: #3390ec !important; }
+  textarea { height: 70px !important; resize: none !important; }
+ 
+  .tipo-buttons { display: flex !important; gap: 10px !important; }
+ 
+  .tipo-btn {
+    flex: 1 !important;
+    padding: 16px !important;
+    border-radius: 12px !important;
+    border: 2px solid #3a3a3c !important;
+    background-color: #2c2c2e !important;
+    color: #ffffff !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    text-align: center !important;
+    cursor: pointer !important;
+  }
+ 
+  .tipo-btn.active {
+    border-color: #3390ec !important;
+    background-color: #3390ec !important;
+    color: #ffffff !important;
+  }
+ 
+  .search-container { position: relative !important; }
+ 
+  .search-results {
+    position: absolute !important;
+    top: 100% !important;
+    left: 0 !important;
+    right: 0 !important;
+    background-color: #1c1c1e !important;
+    border: 1px solid #48484a !important;
+    border-radius: 12px !important;
+    margin-top: 4px !important;
+    max-height: 200px !important;
+    overflow-y: auto !important;
+    z-index: 9999 !important;
+    display: none !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.8) !important;
+  }
+ 
+  .search-results.active { display: block !important; }
+ 
+  .error-msg {
+    color: #ff453a !important;
+    font-size: 12px !important;
+    margin-top: 6px !important;
+    display: none;
+  }
+ 
+  .loading-screen {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 80vh !important;
+    font-size: 16px !important;
+    color: #8e8e93 !important;
+    gap: 12px !important;
+  }
+ 
+  .spinner {
+    width: 32px !important;
+    height: 32px !important;
+    border: 3px solid #3a3a3c !important;
+    border-top: 3px solid #3390ec !important;
+    border-radius: 50% !important;
+    animation: spin 0.8s linear infinite !important;
+  }
+ 
+  @keyframes spin { to { transform: rotate(360deg); } }
+ 
+  #formContainer { display: none; }
 </style>
-
 </head>
 <body>
-
+ 
 <div id="loadingScreen" class="loading-screen">
   <div class="spinner"></div>
   Cargando datos...
 </div>
-
+ 
 <div id="formContainer">
   <h1>📋 Nueva Operacion</h1>
-
+ 
+  <div style="text-align:center;margin-bottom:20px;">
+    <span id="deleteBtn" style="display:inline-block;padding:10px 20px;background-color:#ff453a;color:#ffffff;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">🗑 Eliminar mi ultima operacion</span>
+  </div>
+ 
   <div class="field">
     <label>Tipo</label>
     <div class="tipo-buttons" id="tipoButtons"></div>
     <div class="error-msg" id="tipoError">Selecciona un tipo</div>
   </div>
-
+ 
   <div class="field">
     <label>Monto</label>
-    <input type="number" id="monto" placeholder="Ej: 5000" inputmode="numeric">
+    <input type="text" id="monto" placeholder="Ej: 5000" inputmode="decimal">
     <div class="error-msg" id="montoError">Ingresa un monto valido</div>
   </div>
-
+ 
   <div class="field z-high">
     <label>Cliente (opcional)</label>
     <div class="search-container">
@@ -189,9 +160,8 @@ animation: spin 0.8s linear infinite !important;
       <div class="search-results" id="clienteResults"></div>
     </div>
     <div id="clienteSelected"></div>
-    <div class="error-msg" id="clienteError">Selecciona un cliente</div>
   </div>
-
+ 
   <div class="field z-med">
     <label>Metodo de Pago</label>
     <div class="search-container">
@@ -201,41 +171,57 @@ animation: spin 0.8s linear infinite !important;
     <div id="metodoSelected"></div>
     <div class="error-msg" id="metodoError">Selecciona un metodo de pago</div>
   </div>
-
+ 
   <div class="field">
     <label>Notas (opcional)</label>
     <textarea id="notas" placeholder="Ej: BCP a Nicothegoat"></textarea>
   </div>
 </div>
-
+ 
 <script>
 var API_URL = "https://script.google.com/macros/s/AKfycbz_Kf5iNIwm4jadZwaCoLdE4hVntcxeURf4vFj8I-UOpUqM1YAL6-dVO_GtVTt461s/exec";
-
+ 
 var tg = window.Telegram.WebApp;
 tg.ready();
 tg.expand();
-tg.setBackgroundColor("#0e0e0e");
-tg.setHeaderColor("#0e0e0e");
-
+try { tg.setBackgroundColor("#0e0e0e"); tg.setHeaderColor("#0e0e0e"); } catch(e) {}
+ 
 var listas = {};
 var selectedTipo = "";
 var selectedCliente = "";
 var selectedMetodo = "";
-
-fetch(API_URL + "?action=listas")
-  .then(function(r) { return r.json(); })
-  .then(function(data) {
-    listas = data;
-    buildForm();
-    document.getElementById("loadingScreen").style.cssText = "display:none !important";
-    document.getElementById("formContainer").style.display = "block";
-    tg.MainButton.setText("✅ CONFIRMAR");
-    tg.MainButton.show();
-  })
-  .catch(function(err) {
-    document.getElementById("loadingScreen").innerHTML = "<div style='color:#ff453a'>Error al cargar: " + err + "</div>";
-  });
-
+ 
+// ============================================================
+// CARGAR: verificar usuario + obtener listas
+// ============================================================
+var userId = tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : null;
+ 
+if (!userId) {
+  document.getElementById("loadingScreen").innerHTML = "<div style='color:#ff453a;text-align:center;font-size:16px;'>No se pudo verificar tu identidad.<br><br><span style=\"color:#8e8e93;font-size:14px;\">Abri este formulario desde Telegram.</span></div>";
+} else {
+  fetch(API_URL + "?action=verificar&userId=" + userId)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (!data.autorizado) {
+        document.getElementById("loadingScreen").style.cssText = "display:flex !important;flex-direction:column;align-items:center;justify-content:center;height:80vh;";
+        document.getElementById("loadingScreen").innerHTML = "<div style='color:#ff453a;text-align:center;font-size:18px;font-weight:600;'>⛔ No estas autorizado</div><div style='color:#8e8e93;text-align:center;font-size:14px;margin-top:12px;'>Debes ser miembro del grupo<br>para usar este formulario.</div>";
+        return;
+      }
+      listas = data.listas;
+      buildForm();
+      document.getElementById("loadingScreen").style.cssText = "display:none !important";
+      document.getElementById("formContainer").style.display = "block";
+      tg.MainButton.setText("✅ CONFIRMAR");
+      tg.MainButton.show();
+    })
+    .catch(function(err) {
+      document.getElementById("loadingScreen").innerHTML = "<div style='color:#ff453a'>Error al cargar: " + err + "</div>";
+    });
+}
+ 
+// ============================================================
+// CONSTRUIR FORMULARIO
+// ============================================================
 function buildForm() {
   var container = document.getElementById("tipoButtons");
   listas.tipos.forEach(function(tipo) {
@@ -257,44 +243,71 @@ function buildForm() {
     };
     container.appendChild(btn);
   });
-
+ 
+  // Monto: solo numeros y punto decimal, sin comas
+  var montoInput = document.getElementById("monto");
+  montoInput.addEventListener("input", function() {
+    this.value = this.value.replace(/,/g, "").replace(/[^0-9.]/g, "");
+    var parts = this.value.split(".");
+    if (parts.length > 2) this.value = parts[0] + "." + parts.slice(1).join("");
+  });
+  montoInput.addEventListener("keypress", function(e) {
+    if (e.key === "," || e.key === "-" || e.key === "e" || e.key === "+") {
+      e.preventDefault();
+    }
+  });
+ 
+  // Buscadores
   setupSearch("clienteSearch", "clienteResults", "clienteSelected", listas.clientes, function(val) {
     selectedCliente = val;
-    hide("clienteError");
   });
-
+ 
   setupSearch("metodoSearch", "metodoResults", "metodoSelected", listas.metodos, function(val) {
     selectedMetodo = val;
     hide("metodoError");
   });
+ 
+  // Cliente: no permitir texto libre
+  var clienteInput = document.getElementById("clienteSearch");
+  clienteInput.addEventListener("blur", function() {
+    var self = this;
+    setTimeout(function() {
+      if (self.value !== "" && selectedCliente === "") {
+        self.value = "";
+      }
+    }, 300);
+  });
 }
-
+ 
+// ============================================================
+// BUSCADOR CON DROPDOWN
+// ============================================================
 function setupSearch(inputId, resultsId, selectedId, list, onSelect) {
   var input = document.getElementById(inputId);
   var results = document.getElementById(resultsId);
   var selectedDiv = document.getElementById(selectedId);
-
+ 
   input.addEventListener("input", function() {
     var q = this.value.toLowerCase().trim();
     results.innerHTML = "";
-
+ 
     if (q.length === 0) {
       results.classList.remove("active");
       return;
     }
-
+ 
     var matches = [];
     for (var i = 0; i < list.length && matches.length < 8; i++) {
       if (list[i].toLowerCase().indexOf(q) >= 0) {
         matches.push(list[i]);
       }
     }
-
+ 
     if (matches.length === 0) {
       results.classList.remove("active");
       return;
     }
-
+ 
     matches.forEach(function(match) {
       var item = document.createElement("div");
       item.textContent = match;
@@ -304,6 +317,7 @@ function setupSearch(inputId, resultsId, selectedId, list, onSelect) {
       item.onclick = function() {
         onSelect(match);
         input.value = "";
+        input.style.display = "none";
         results.classList.remove("active");
         selectedDiv.innerHTML = "";
         var tag = document.createElement("span");
@@ -315,6 +329,8 @@ function setupSearch(inputId, resultsId, selectedId, list, onSelect) {
         clearBtn.onclick = function(e) {
           e.stopPropagation();
           selectedDiv.innerHTML = "";
+          input.style.display = "block";
+          input.value = "";
           if (selectedId === "clienteSelected") selectedCliente = "";
           if (selectedId === "metodoSelected") selectedMetodo = "";
         };
@@ -323,45 +339,51 @@ function setupSearch(inputId, resultsId, selectedId, list, onSelect) {
       };
       results.appendChild(item);
     });
-
+ 
     results.classList.add("active");
   });
-
+ 
   document.addEventListener("click", function(e) {
     if (!input.contains(e.target) && !results.contains(e.target)) {
       results.classList.remove("active");
     }
   });
 }
-
+ 
+// ============================================================
+// CONFIRMAR
+// ============================================================
 tg.MainButton.onClick(function() {
   var valid = true;
-
+ 
   if (!selectedTipo) { show("tipoError"); valid = false; } else { hide("tipoError"); }
-
-  var monto = document.getElementById("monto").value;
-  if (!monto || isNaN(parseFloat(monto)) || parseFloat(monto) <= 0) {
+ 
+  var montoVal = document.getElementById("monto").value;
+  var monto = parseFloat(montoVal);
+  if (!montoVal || isNaN(monto) || monto <= 0) {
     show("montoError"); valid = false;
   } else { hide("montoError"); }
-
-  hide("clienteError");
+ 
+  var clienteInput = document.getElementById("clienteSearch");
+  if (clienteInput.value !== "" && selectedCliente === "") {
+    clienteInput.value = "";
+  }
+ 
   if (!selectedMetodo) { show("metodoError"); valid = false; } else { hide("metodoError"); }
-
+ 
   if (!valid) return;
-
+ 
   tg.MainButton.showProgress();
   tg.MainButton.setText("Guardando...");
-
+ 
   var userName = "Usuario";
   try {
     if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
       userName = tg.initDataUnsafe.user.first_name;
-      if (tg.initDataUnsafe.user.last_name) {
-        userName += " " + tg.initDataUnsafe.user.last_name;
-      }
+      if (tg.initDataUnsafe.user.last_name) userName += " " + tg.initDataUnsafe.user.last_name;
     }
   } catch(e) {}
-
+ 
   fetch(API_URL, {
     method: "POST",
     headers: {"Content-Type": "text/plain"},
@@ -372,7 +394,7 @@ tg.MainButton.onClick(function() {
       metodo: selectedMetodo,
       notas: document.getElementById("notas").value || "",
       userName: userName,
-      telegramUserId: tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : null
+      telegramUserId: userId
     })
   })
   .then(function(r) { return r.json(); })
@@ -392,10 +414,52 @@ tg.MainButton.onClick(function() {
     tg.showAlert("Error de conexion: " + err);
   });
 });
-
+ 
+// ============================================================
+// ELIMINAR ULTIMA OPERACION
+// ============================================================
+document.getElementById("deleteBtn").onclick = function() {
+  if (!confirm("Seguro que queres eliminar tu ultima operacion?")) return;
+ 
+  var userName = "Usuario";
+  try {
+    if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+      userName = tg.initDataUnsafe.user.first_name;
+      if (tg.initDataUnsafe.user.last_name) userName += " " + tg.initDataUnsafe.user.last_name;
+    }
+  } catch(e) {}
+ 
+  document.getElementById("deleteBtn").textContent = "Eliminando...";
+  document.getElementById("deleteBtn").style.opacity = "0.5";
+ 
+  fetch(API_URL, {
+    method: "POST",
+    headers: {"Content-Type": "text/plain"},
+    body: JSON.stringify({
+      action: "eliminar",
+      telegramUserId: userId,
+      userName: userName
+    })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(result) {
+    document.getElementById("deleteBtn").textContent = "🗑 Eliminar mi ultima operacion";
+    document.getElementById("deleteBtn").style.opacity = "1";
+    if (result.ok) {
+      tg.showAlert(result.mensaje);
+    } else {
+      tg.showAlert("Error: " + (result.error || ""));
+    }
+  })
+  .catch(function(err) {
+    document.getElementById("deleteBtn").textContent = "🗑 Eliminar mi ultima operacion";
+    document.getElementById("deleteBtn").style.opacity = "1";
+    tg.showAlert("Error: " + err);
+  });
+};
+ 
 function show(id) { document.getElementById(id).style.display = "block"; }
 function hide(id) { document.getElementById(id).style.display = "none"; }
 </script>
-
 </body>
 </html>
