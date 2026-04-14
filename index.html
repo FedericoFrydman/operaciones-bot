@@ -419,37 +419,72 @@ tg.MainButton.onClick(function() {
 // ELIMINAR ULTIMA OPERACION
 // ============================================================
 document.getElementById("deleteBtn").onclick = function() {
-  if (!confirm("Seguro que queres eliminar tu ultima operacion?")) return;
- 
-  var userName = "Usuario";
-  try {
-    if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-      userName = tg.initDataUnsafe.user.first_name;
-      if (tg.initDataUnsafe.user.last_name) userName += " " + tg.initDataUnsafe.user.last_name;
-    }
-  } catch(e) {}
- 
-  document.getElementById("deleteBtn").textContent = "Eliminando...";
+  document.getElementById("deleteBtn").textContent = "Consultando...";
   document.getElementById("deleteBtn").style.opacity = "0.5";
- 
+
   fetch(API_URL, {
     method: "POST",
     headers: {"Content-Type": "text/plain"},
     body: JSON.stringify({
-      action: "eliminar",
-      telegramUserId: userId,
-      userName: userName
+      action: "consultar_ultima",
+      telegramUserId: userId
     })
   })
   .then(function(r) { return r.json(); })
   .then(function(result) {
     document.getElementById("deleteBtn").textContent = "🗑 Eliminar mi ultima operacion";
     document.getElementById("deleteBtn").style.opacity = "1";
-    if (result.ok) {
-      tg.showAlert(result.mensaje);
-    } else {
-      tg.showAlert("Error: " + (result.error || ""));
+
+    if (!result.ok) {
+      tg.showAlert(result.error || "No se encontro operacion");
+      return;
     }
+
+    var op = result.operacion;
+    var msg = "Queres eliminar esta operacion?\n\n";
+    msg += "Tipo: " + op.tipo + "\n";
+    msg += "Monto: " + op.monto + "\n";
+    if (op.cliente) msg += "Cliente: " + op.cliente + "\n";
+    msg += "Metodo: " + op.metodo + "\n";
+    msg += "Fila: " + op.fila;
+
+    if (!confirm(msg)) return;
+
+    var userName = "Usuario";
+    try {
+      if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+        userName = tg.initDataUnsafe.user.first_name;
+        if (tg.initDataUnsafe.user.last_name) userName += " " + tg.initDataUnsafe.user.last_name;
+      }
+    } catch(e) {}
+
+    document.getElementById("deleteBtn").textContent = "Eliminando...";
+    document.getElementById("deleteBtn").style.opacity = "0.5";
+
+    fetch(API_URL, {
+      method: "POST",
+      headers: {"Content-Type": "text/plain"},
+      body: JSON.stringify({
+        action: "eliminar",
+        telegramUserId: userId,
+        userName: userName
+      })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(delResult) {
+      document.getElementById("deleteBtn").textContent = "🗑 Eliminar mi ultima operacion";
+      document.getElementById("deleteBtn").style.opacity = "1";
+      if (delResult.ok) {
+        tg.showAlert(delResult.mensaje);
+      } else {
+        tg.showAlert("Error: " + (delResult.error || ""));
+      }
+    })
+    .catch(function(err) {
+      document.getElementById("deleteBtn").textContent = "🗑 Eliminar mi ultima operacion";
+      document.getElementById("deleteBtn").style.opacity = "1";
+      tg.showAlert("Error: " + err);
+    });
   })
   .catch(function(err) {
     document.getElementById("deleteBtn").textContent = "🗑 Eliminar mi ultima operacion";
