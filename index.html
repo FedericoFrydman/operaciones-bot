@@ -54,7 +54,7 @@
   input:focus, textarea:focus { border-color: #3390ec !important; }
   textarea { height: 70px !important; resize: none !important; }
  
-  .tipo-buttons { display: flex !important; gap: 10px !important; }
+  .tipo-buttons { display: flex !important; gap: 10px !important; flex-wrap: wrap !important; }
  
   .tipo-btn {
     flex: 1 !important;
@@ -125,6 +125,92 @@
   @keyframes spin { to { transform: rotate(360deg); } }
  
   #formContainer { display: none; }
+
+  /* COLA DE OPERACIONES */
+  #colaContainer {
+    margin-bottom: 18px;
+    display: none;
+  }
+
+  #colaLabel {
+    font-size: 13px;
+    font-weight: 600;
+    color: #8e8e93;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+
+  .cola-item {
+    background-color: #1c1c1e;
+    border: 1px solid #3a3a3c;
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 14px;
+    color: #ffffff;
+  }
+
+  .cola-item-info { flex: 1; line-height: 1.5; }
+  .cola-item-info span { color: #8e8e93; font-size: 12px; }
+
+  .cola-item-remove {
+    color: #ff453a;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    padding-left: 12px;
+    opacity: 0.8;
+  }
+
+  /* BOTONES INFERIORES */
+  #botonesContainer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 12px 16px;
+    background-color: #0e0e0e;
+    display: flex;
+    gap: 10px;
+    z-index: 100;
+  }
+
+  #btnAgregar {
+    width: 54px;
+    height: 54px;
+    border-radius: 14px;
+    background-color: #2c2c2e;
+    border: 2px solid #3a3a3c;
+    color: #ffffff;
+    font-size: 28px;
+    font-weight: 300;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  #btnAgregar:active { background-color: #3a3a3c; }
+
+  #btnConfirmar {
+    flex: 1;
+    height: 54px;
+    border-radius: 14px;
+    background-color: #3390ec;
+    border: none;
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  #btnConfirmar:active { background-color: #2070cc; }
+  #btnConfirmar:disabled { opacity: 0.5; }
 </style>
 </head>
 <body>
@@ -139,6 +225,12 @@
  
   <div style="text-align:center;margin-bottom:20px;">
     <span id="deleteBtn" style="display:inline-block;padding:10px 20px;background-color:#ff453a;color:#ffffff;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">🗑 Eliminar mi ultima operacion</span>
+  </div>
+
+  <!-- COLA -->
+  <div id="colaContainer">
+    <div id="colaLabel">En cola</div>
+    <div id="colaItems"></div>
   </div>
  
   <div class="field">
@@ -177,6 +269,12 @@
     <textarea id="notas" placeholder="Ej: BCP a Nicothegoat"></textarea>
   </div>
 </div>
+
+<!-- BOTONES FIJOS -->
+<div id="botonesContainer" style="display:none;">
+  <div id="btnAgregar" title="Agregar a cola">+</div>
+  <button id="btnConfirmar">✅ CONFIRMAR</button>
+</div>
  
 <script>
 var API_URL = "https://script.google.com/macros/s/AKfycbz_Kf5iNIwm4jadZwaCoLdE4hVntcxeURf4vFj8I-UOpUqM1YAL6-dVO_GtVTt461s/exec";
@@ -185,15 +283,16 @@ var tg = window.Telegram.WebApp;
 tg.ready();
 tg.expand();
 try { tg.setBackgroundColor("#0e0e0e"); tg.setHeaderColor("#0e0e0e"); } catch(e) {}
+
+// Ocultar el MainButton de Telegram — usamos nuestros propios botones
+tg.MainButton.hide();
  
 var listas = {};
 var selectedTipo = "";
 var selectedCliente = "";
 var selectedMetodo = "";
+var cola = []; // lista de operaciones acumuladas
  
-// ============================================================
-// CARGAR: verificar usuario + obtener listas
-// ============================================================
 var userId = tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : null;
  
 if (!userId) {
@@ -211,8 +310,7 @@ if (!userId) {
       buildForm();
       document.getElementById("loadingScreen").style.cssText = "display:none !important";
       document.getElementById("formContainer").style.display = "block";
-      tg.MainButton.setText("✅ CONFIRMAR");
-      tg.MainButton.show();
+      document.getElementById("botonesContainer").style.display = "flex";
     })
     .catch(function(err) {
       document.getElementById("loadingScreen").innerHTML = "<div style='color:#ff453a'>Error al cargar: " + err + "</div>";
@@ -244,7 +342,6 @@ function buildForm() {
     container.appendChild(btn);
   });
  
-  // Monto: solo numeros y punto decimal, sin comas
   var montoInput = document.getElementById("monto");
   montoInput.addEventListener("input", function() {
     this.value = this.value.replace(/,/g, "").replace(/[^0-9.]/g, "");
@@ -257,7 +354,6 @@ function buildForm() {
     }
   });
  
-  // Buscadores
   setupSearch("clienteSearch", "clienteResults", "clienteSelected", listas.clientes, function(val) {
     selectedCliente = val;
   });
@@ -267,7 +363,6 @@ function buildForm() {
     hide("metodoError");
   });
  
-  // Cliente: no permitir texto libre
   var clienteInput = document.getElementById("clienteSearch");
   clienteInput.addEventListener("blur", function() {
     var self = this;
@@ -349,33 +444,148 @@ function setupSearch(inputId, resultsId, selectedId, list, onSelect) {
     }
   });
 }
- 
+
 // ============================================================
-// CONFIRMAR
+// VALIDAR FORMULARIO
 // ============================================================
-tg.MainButton.onClick(function() {
+function validarForm() {
   var valid = true;
- 
+
   if (!selectedTipo) { show("tipoError"); valid = false; } else { hide("tipoError"); }
- 
+
   var montoVal = document.getElementById("monto").value;
   var monto = parseFloat(montoVal);
   if (!montoVal || isNaN(monto) || monto <= 0) {
     show("montoError"); valid = false;
   } else { hide("montoError"); }
- 
+
   var clienteInput = document.getElementById("clienteSearch");
   if (clienteInput.value !== "" && selectedCliente === "") {
     clienteInput.value = "";
   }
- 
+
   if (!selectedMetodo) { show("metodoError"); valid = false; } else { hide("metodoError"); }
- 
-  if (!valid) return;
- 
-  tg.MainButton.showProgress();
-  tg.MainButton.setText("Guardando...");
- 
+
+  return valid;
+}
+
+// ============================================================
+// LIMPIAR FORMULARIO
+// ============================================================
+function limpiarForm() {
+  // Tipo
+  document.querySelectorAll(".tipo-btn").forEach(function(b) {
+    b.classList.remove("active");
+    b.style.backgroundColor = "#2c2c2e";
+    b.style.borderColor = "#3a3a3c";
+  });
+  selectedTipo = "";
+
+  // Monto
+  document.getElementById("monto").value = "";
+
+  // Cliente
+  selectedCliente = "";
+  document.getElementById("clienteSearch").value = "";
+  document.getElementById("clienteSearch").style.display = "block";
+  document.getElementById("clienteSelected").innerHTML = "";
+
+  // Metodo
+  selectedMetodo = "";
+  document.getElementById("metodoSearch").value = "";
+  document.getElementById("metodoSearch").style.display = "block";
+  document.getElementById("metodoSelected").innerHTML = "";
+
+  // Notas
+  document.getElementById("notas").value = "";
+}
+
+// ============================================================
+// RENDERIZAR COLA
+// ============================================================
+function renderCola() {
+  var container = document.getElementById("colaContainer");
+  var items = document.getElementById("colaItems");
+
+  if (cola.length === 0) {
+    container.style.display = "none";
+    return;
+  }
+
+  container.style.display = "block";
+  items.innerHTML = "";
+
+  cola.forEach(function(op, idx) {
+    var div = document.createElement("div");
+    div.className = "cola-item";
+    div.innerHTML =
+      "<div class='cola-item-info'>" +
+        "<strong>" + op.tipo + "</strong> — " + op.monto +
+        (op.cliente ? "<br><span>" + op.cliente + " · " + op.metodo + "</span>" : "<br><span>" + op.metodo + "</span>") +
+      "</div>" +
+      "<div class='cola-item-remove' data-idx='" + idx + "'>✕</div>";
+    items.appendChild(div);
+  });
+
+  // Botones de eliminar de la cola
+  items.querySelectorAll(".cola-item-remove").forEach(function(btn) {
+    btn.onclick = function() {
+      var idx = parseInt(this.getAttribute("data-idx"));
+      cola.splice(idx, 1);
+      renderCola();
+    };
+  });
+}
+
+// ============================================================
+// BOTON +: AGREGAR A COLA
+// ============================================================
+document.getElementById("btnAgregar").onclick = function() {
+  if (!validarForm()) return;
+
+  var monto = parseFloat(document.getElementById("monto").value);
+
+  cola.push({
+    tipo: selectedTipo,
+    monto: monto,
+    cliente: selectedCliente,
+    metodo: selectedMetodo,
+    notas: document.getElementById("notas").value || ""
+  });
+
+  renderCola();
+  limpiarForm();
+
+  // Scroll arriba para ver la cola
+  window.scrollTo({ top: 0, behavior: "smooth" });
+};
+
+// ============================================================
+// BOTON CONFIRMAR: ENVIAR TODO
+// ============================================================
+document.getElementById("btnConfirmar").onclick = function() {
+  if (!validarForm()) return;
+
+  var monto = parseFloat(document.getElementById("monto").value);
+
+  // Agregar la operación actual a la cola
+  var operacionActual = {
+    tipo: selectedTipo,
+    monto: monto,
+    cliente: selectedCliente,
+    metodo: selectedMetodo,
+    notas: document.getElementById("notas").value || ""
+  };
+
+  var todasLasOps = cola.concat([operacionActual]);
+
+  var btnConfirmar = document.getElementById("btnConfirmar");
+  var btnAgregar = document.getElementById("btnAgregar");
+  btnConfirmar.disabled = true;
+  btnConfirmar.textContent = "Guardando...";
+  btnAgregar.style.opacity = "0.5";
+  btnAgregar.style.pointerEvents = "none";
+
   var userName = "Usuario";
   try {
     if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
@@ -383,37 +593,66 @@ tg.MainButton.onClick(function() {
       if (tg.initDataUnsafe.user.last_name) userName += " " + tg.initDataUnsafe.user.last_name;
     }
   } catch(e) {}
- 
-  fetch(API_URL, {
-    method: "POST",
-    headers: {"Content-Type": "text/plain"},
-    body: JSON.stringify({
-      tipo: selectedTipo,
-      monto: monto,
-      cliente: selectedCliente,
-      metodo: selectedMetodo,
-      notas: document.getElementById("notas").value || "",
-      userName: userName,
-      telegramUserId: userId
-    })
-  })
-  .then(function(r) { return r.json(); })
-  .then(function(result) {
-    tg.MainButton.hideProgress();
-    if (result.ok) {
-      tg.showAlert("Operacion registrada en fila " + result.fila);
+
+  // Enviar una por una en secuencia
+  function enviarSiguiente(idx) {
+    if (idx >= todasLasOps.length) {
+      // Todo enviado
+      btnConfirmar.disabled = false;
+      btnConfirmar.textContent = "✅ CONFIRMAR";
+      btnAgregar.style.opacity = "1";
+      btnAgregar.style.pointerEvents = "auto";
+      cola = [];
+      renderCola();
+      limpiarForm();
+      if (todasLasOps.length === 1) {
+        tg.showAlert("Operacion registrada");
+      } else {
+        tg.showAlert(todasLasOps.length + " operaciones registradas");
+      }
       setTimeout(function() { tg.close(); }, 1500);
-    } else {
-      tg.MainButton.setText("✅ CONFIRMAR");
-      tg.showAlert("Error: " + (result.error || ""));
+      return;
     }
-  })
-  .catch(function(err) {
-    tg.MainButton.hideProgress();
-    tg.MainButton.setText("✅ CONFIRMAR");
-    tg.showAlert("Error de conexion: " + err);
-  });
-});
+
+    var op = todasLasOps[idx];
+    btnConfirmar.textContent = "Guardando " + (idx + 1) + "/" + todasLasOps.length + "...";
+
+    fetch(API_URL, {
+      method: "POST",
+      headers: {"Content-Type": "text/plain"},
+      body: JSON.stringify({
+        tipo: op.tipo,
+        monto: op.monto,
+        cliente: op.cliente,
+        metodo: op.metodo,
+        notas: op.notas,
+        userName: userName,
+        telegramUserId: userId
+      })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(result) {
+      if (result.ok) {
+        enviarSiguiente(idx + 1);
+      } else {
+        btnConfirmar.disabled = false;
+        btnConfirmar.textContent = "✅ CONFIRMAR";
+        btnAgregar.style.opacity = "1";
+        btnAgregar.style.pointerEvents = "auto";
+        tg.showAlert("Error en operacion " + (idx + 1) + ": " + (result.error || ""));
+      }
+    })
+    .catch(function(err) {
+      btnConfirmar.disabled = false;
+      btnConfirmar.textContent = "✅ CONFIRMAR";
+      btnAgregar.style.opacity = "1";
+      btnAgregar.style.pointerEvents = "auto";
+      tg.showAlert("Error de conexion: " + err);
+    });
+  }
+
+  enviarSiguiente(0);
+};
  
 // ============================================================
 // ELIMINAR ULTIMA OPERACION
@@ -482,7 +721,7 @@ document.getElementById("deleteBtn").onclick = function() {
     })
     .catch(function(err) {
       document.getElementById("deleteBtn").textContent = "🗑 Eliminar mi ultima operacion";
-      document.getElementById("deleteBtn").style.opacity = "1";
+      document.getElementById("deleteBtn").style.opacity = "0.5";
       tg.showAlert("Error: " + err);
     });
   })
