@@ -78,19 +78,17 @@
   .search-container { position: relative !important; }
  
   .search-results {
-    position: absolute !important;
-    top: 100% !important;
-    left: 0 !important;
-    right: 0 !important;
+    position: fixed !important;
+    left: 16px !important;
+    right: 16px !important;
     background-color: #1c1c1e !important;
     border: 1px solid #48484a !important;
     border-radius: 12px !important;
-    margin-top: 4px !important;
-    max-height: 200px !important;
+    max-height: 220px !important;
     overflow-y: auto !important;
-    z-index: 9999 !important;
+    z-index: 99999 !important;
     display: none !important;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.8) !important;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.9) !important;
   }
  
   .search-results.active { display: block !important; }
@@ -617,6 +615,7 @@ document.getElementById("btnConfirmar").onclick = function() {
     var op = todasLasOps[idx];
     btnConfirmar.textContent = "Guardando " + (idx + 1) + "/" + todasLasOps.length + "...";
 
+    setTimeout(function() {
     fetch(API_URL, {
       method: "POST",
       headers: {"Content-Type": "text/plain"},
@@ -639,7 +638,7 @@ document.getElementById("btnConfirmar").onclick = function() {
         btnConfirmar.textContent = "✅ CONFIRMAR";
         btnAgregar.style.opacity = "1";
         btnAgregar.style.pointerEvents = "auto";
-        tg.showAlert("Error en operacion " + (idx + 1) + ": " + (result.error || ""));
+        try { tg.showAlert("Error en operacion " + (idx + 1) + ": " + (result.error || "")); } catch(e) { alert("Error en operacion " + (idx+1) + ": " + (result.error||"")); }
       }
     })
     .catch(function(err) {
@@ -647,8 +646,9 @@ document.getElementById("btnConfirmar").onclick = function() {
       btnConfirmar.textContent = "✅ CONFIRMAR";
       btnAgregar.style.opacity = "1";
       btnAgregar.style.pointerEvents = "auto";
-      tg.showAlert("Error de conexion: " + err);
+      try { tg.showAlert("Error de conexion: " + err); } catch(e) { alert("Error de conexion: " + err); }
     });
+    }, idx === 0 ? 0 : 1500);
   }
 
   enviarSiguiente(0);
