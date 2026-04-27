@@ -380,10 +380,21 @@ function setupSearch(inputId, resultsId, selectedId, list, onSelect) {
   var results = document.getElementById(resultsId);
   var selectedDiv = document.getElementById(selectedId);
  
+  input.addEventListener("focus", function() {
+    var self = this;
+    setTimeout(function() {
+      self.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 350);
+  });
+
   input.addEventListener("input", function() {
     var q = this.value.toLowerCase().trim();
     results.innerHTML = "";
- 
+    
+    // Posicionar el dropdown justo debajo del input
+    var rect = input.getBoundingClientRect();
+    results.style.top = (rect.bottom + 4) + "px";
+
     if (q.length === 0) {
       results.classList.remove("active");
       return;
