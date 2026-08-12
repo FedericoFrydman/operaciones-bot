@@ -365,38 +365,28 @@
         tg.setHeaderColor('#0e0e0e');
       } catch (e) {}
 
+      // Ocultar el MainButton de Telegram — usamos nuestros propios botones
       tg.MainButton.hide();
 
       var listas = {};
       var selectedTipo = '';
       var selectedCliente = '';
       var selectedMetodo = '';
-      var cola = [];
+      var cola = []; // lista de operaciones acumuladas
 
       var userId =
         tg.initDataUnsafe && tg.initDataUnsafe.user
           ? tg.initDataUnsafe.user.id
           : null;
 
-      function fetchSafe(url, options) {
-        options = options || {};
-        options.redirect = 'follow';
-        return fetch(url, options)
+      if (!userId) {
+        document.getElementById('loadingScreen').innerHTML =
+          '<div style=\'color:#ff453a;text-align:center;font-size:16px;\'>No se pudo verificar tu identidad.<br><br><span style="color:#8e8e93;font-size:14px;">Abri este formulario desde Telegram.</span></div>';
+      } else {
+        fetch(API_URL + '?action=verificar&userId=' + userId)
           .then(function (r) {
-            return r.text();
+            return r.json();
           })
-          .then(function (text) {
-            try {
-              return JSON.parse(text);
-            } catch (e) {
-              throw new Error('Servidor no respondio JSON valido.');
-            }
-          });
-      }
-
-      function cargarVerificacion(intentos) {
-        intentos = intentos || 1;
-        fetchSafe(API_URL + '?action=verificar&userId=' + userId)
           .then(function (data) {
             if (!data.autorizado) {
               document.getElementById('loadingScreen').style.cssText =
@@ -413,25 +403,14 @@
             document.getElementById('botonesContainer').style.display = 'flex';
           })
           .catch(function (err) {
-            if (intentos < 2) {
-              // Reintento silencioso en 1s si el servidor estaba "dormido"
-              setTimeout(function () {
-                cargarVerificacion(intentos + 1);
-              }, 1000);
-            } else {
-              document.getElementById('loadingScreen').innerHTML =
-                "<div style='color:#ff453a;text-align:center;'>Error temporal de conexión.<br><span style='font-size:12px;color:#8e8e93;'>Por favor cerra y volve a abrir el formulario.</span></div>";
-            }
+            document.getElementById('loadingScreen').innerHTML =
+              "<div style='color:#ff453a'>Error al cargar: " + err + '</div>';
           });
       }
 
-      if (!userId) {
-        document.getElementById('loadingScreen').innerHTML =
-          '<div style=\'color:#ff453a;text-align:center;font-size:16px;\'>No se pudo verificar tu identidad.<br><br><span style="color:#8e8e93;font-size:14px;">Abri este formulario desde Telegram.</span></div>';
-      } else {
-        cargarVerificacion(1);
-      }
-
+      // ============================================================
+      // CONSTRUIR FORMULARIO
+      // ============================================================
       function buildForm() {
         var container = document.getElementById('tipoButtons');
         listas.tipos.forEach(function (tipo) {
@@ -505,6 +484,9 @@
         });
       }
 
+      // ============================================================
+      // BUSCADOR CON DROPDOWN
+      // ============================================================
       function setupSearch(inputId, resultsId, selectedId, list, onSelect) {
         var input = document.getElementById(inputId);
         var results = document.getElementById(resultsId);
@@ -521,6 +503,7 @@
           var q = this.value.toLowerCase().trim();
           results.innerHTML = '';
 
+          // Posicionar el dropdown justo debajo del input
           var rect = input.getBoundingClientRect();
           results.style.top = rect.bottom + 4 + 'px';
 
@@ -590,6 +573,9 @@
         });
       }
 
+      // ============================================================
+      // VALIDAR FORMULARIO
+      // ============================================================
       function validarForm() {
         var valid = true;
 
@@ -624,7 +610,11 @@
         return valid;
       }
 
+      // ============================================================
+      // LIMPIAR FORMULARIO
+      // ============================================================
       function limpiarForm() {
+        // Tipo
         document.querySelectorAll('.tipo-btn').forEach(function (b) {
           b.classList.remove('active');
           b.style.backgroundColor = '#2c2c2e';
@@ -632,21 +622,28 @@
         });
         selectedTipo = '';
 
+        // Monto
         document.getElementById('monto').value = '';
 
+        // Cliente
         selectedCliente = '';
         document.getElementById('clienteSearch').value = '';
         document.getElementById('clienteSearch').style.display = 'block';
         document.getElementById('clienteSelected').innerHTML = '';
 
+        // Metodo
         selectedMetodo = '';
         document.getElementById('metodoSearch').value = '';
         document.getElementById('metodoSearch').style.display = 'block';
         document.getElementById('metodoSelected').innerHTML = '';
 
+        // Notas
         document.getElementById('notas').value = '';
       }
 
+      // ============================================================
+      // RENDERIZAR COLA
+      // ============================================================
       function renderCola() {
         var container = document.getElementById('colaContainer');
         var items = document.getElementById('colaItems');
@@ -678,6 +675,7 @@
           items.appendChild(div);
         });
 
+        // Botones de eliminar de la cola
         items.querySelectorAll('.cola-item-remove').forEach(function (btn) {
           btn.onclick = function () {
             var idx = parseInt(this.getAttribute('data-idx'));
@@ -687,6 +685,9 @@
         });
       }
 
+      // ============================================================
+      // BOTON +: AGREGAR A COLA
+      // ============================================================
       document.getElementById('btnAgregar').onclick = function () {
         if (!validarForm()) return;
 
@@ -703,14 +704,19 @@
         renderCola();
         limpiarForm();
 
+        // Scroll arriba para ver la cola
         window.scrollTo({ top: 0, behavior: 'smooth' });
       };
 
+      // ============================================================
+      // BOTON CONFIRMAR: ENVIAR TODO
+      // ============================================================
       document.getElementById('btnConfirmar').onclick = function () {
         if (!validarForm()) return;
 
         var monto = parseFloat(document.getElementById('monto').value);
 
+        // Agregar la operación actual a la cola
         var operacionActual = {
           tipo: selectedTipo,
           monto: monto,
@@ -737,8 +743,10 @@
           }
         } catch (e) {}
 
+        // Enviar una por una en secuencia
         function enviarSiguiente(idx) {
           if (idx >= todasLasOps.length) {
+            // Todo enviado
             btnConfirmar.disabled = false;
             btnConfirmar.textContent = '✅ CONFIRMAR';
             btnAgregar.style.opacity = '1';
@@ -763,7 +771,7 @@
 
           setTimeout(
             function () {
-              fetchSafe(API_URL, {
+              fetch(API_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain' },
                 body: JSON.stringify({
@@ -776,6 +784,9 @@
                   telegramUserId: userId,
                 }),
               })
+                .then(function (r) {
+                  return r.json();
+                })
                 .then(function (result) {
                   if (result.ok) {
                     enviarSiguiente(idx + 1);
@@ -784,12 +795,21 @@
                     btnConfirmar.textContent = '✅ CONFIRMAR';
                     btnAgregar.style.opacity = '1';
                     btnAgregar.style.pointerEvents = 'auto';
-                    tg.showAlert(
-                      'Error en operacion ' +
-                        (idx + 1) +
-                        ': ' +
-                        (result.error || 'Verifica la planilla'),
-                    );
+                    try {
+                      tg.showAlert(
+                        'Error en operacion ' +
+                          (idx + 1) +
+                          ': ' +
+                          (result.error || ''),
+                      );
+                    } catch (e) {
+                      alert(
+                        'Error en operacion ' +
+                          (idx + 1) +
+                          ': ' +
+                          (result.error || ''),
+                      );
+                    }
                   }
                 })
                 .catch(function (err) {
@@ -797,7 +817,11 @@
                   btnConfirmar.textContent = '✅ CONFIRMAR';
                   btnAgregar.style.opacity = '1';
                   btnAgregar.style.pointerEvents = 'auto';
-                  tg.showAlert('Atencion: Servidor ocupado. Verifica si se cargo en el Sheet.');
+                  try {
+                    tg.showAlert('Error de conexion: ' + err);
+                  } catch (e) {
+                    alert('Error de conexion: ' + err);
+                  }
                 });
             },
             idx === 0 ? 0 : 1500,
@@ -807,11 +831,14 @@
         enviarSiguiente(0);
       };
 
+      // ============================================================
+      // ELIMINAR ULTIMA OPERACION
+      // ============================================================
       document.getElementById('deleteBtn').onclick = function () {
         document.getElementById('deleteBtn').textContent = 'Consultando...';
         document.getElementById('deleteBtn').style.opacity = '0.5';
 
-        fetchSafe(API_URL, {
+        fetch(API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain' },
           body: JSON.stringify({
@@ -819,6 +846,9 @@
             telegramUserId: userId,
           }),
         })
+          .then(function (r) {
+            return r.json();
+          })
           .then(function (result) {
             document.getElementById('deleteBtn').textContent =
               '🗑 Eliminar mi ultima operacion';
@@ -851,7 +881,7 @@
             document.getElementById('deleteBtn').textContent = 'Eliminando...';
             document.getElementById('deleteBtn').style.opacity = '0.5';
 
-            fetchSafe(API_URL, {
+            fetch(API_URL, {
               method: 'POST',
               headers: { 'Content-Type': 'text/plain' },
               body: JSON.stringify({
@@ -860,6 +890,9 @@
                 userName: userName,
               }),
             })
+              .then(function (r) {
+                return r.json();
+              })
               .then(function (delResult) {
                 document.getElementById('deleteBtn').textContent =
                   '🗑 Eliminar mi ultima operacion';
@@ -873,15 +906,15 @@
               .catch(function (err) {
                 document.getElementById('deleteBtn').textContent =
                   '🗑 Eliminar mi ultima operacion';
-                document.getElementById('deleteBtn').style.opacity = '1';
-                tg.showAlert('Error de conexion');
+                document.getElementById('deleteBtn').style.opacity = '0.5';
+                tg.showAlert('Error: ' + err);
               });
           })
           .catch(function (err) {
             document.getElementById('deleteBtn').textContent =
               '🗑 Eliminar mi ultima operacion';
             document.getElementById('deleteBtn').style.opacity = '1';
-            tg.showAlert('Error de conexion');
+            tg.showAlert('Error: ' + err);
           });
       };
 
