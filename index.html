@@ -378,7 +378,6 @@
           ? tg.initDataUnsafe.user.id
           : null;
 
-      // HELPER FETCH SEGURO PARA CAPTURAR RESPUESTAS NO-JSON
       function fetchSafe(url, options) {
         options = options || {};
         options.redirect = 'follow';
@@ -395,10 +394,8 @@
           });
       }
 
-      if (!userId) {
-        document.getElementById('loadingScreen').innerHTML =
-          '<div style=\'color:#ff453a;text-align:center;font-size:16px;\'>No se pudo verificar tu identidad.<br><br><span style="color:#8e8e93;font-size:14px;">Abri este formulario desde Telegram.</span></div>';
-      } else {
+      function cargarVerificacion(intentos) {
+        intentos = intentos || 1;
         fetchSafe(API_URL + '?action=verificar&userId=' + userId)
           .then(function (data) {
             if (!data.autorizado) {
@@ -416,9 +413,23 @@
             document.getElementById('botonesContainer').style.display = 'flex';
           })
           .catch(function (err) {
-            document.getElementById('loadingScreen').innerHTML =
-              "<div style='color:#ff453a;text-align:center;'>Error temporal de conexión.<br><span style='font-size:12px;color:#8e8e93;'>Por favor cerra y volve a abrir el formulario.</span></div>";
+            if (intentos < 2) {
+              // Reintento silencioso en 1s si el servidor estaba "dormido"
+              setTimeout(function () {
+                cargarVerificacion(intentos + 1);
+              }, 1000);
+            } else {
+              document.getElementById('loadingScreen').innerHTML =
+                "<div style='color:#ff453a;text-align:center;'>Error temporal de conexión.<br><span style='font-size:12px;color:#8e8e93;'>Por favor cerra y volve a abrir el formulario.</span></div>";
+            }
           });
+      }
+
+      if (!userId) {
+        document.getElementById('loadingScreen').innerHTML =
+          '<div style=\'color:#ff453a;text-align:center;font-size:16px;\'>No se pudo verificar tu identidad.<br><br><span style="color:#8e8e93;font-size:14px;">Abri este formulario desde Telegram.</span></div>';
+      } else {
+        cargarVerificacion(1);
       }
 
       function buildForm() {
