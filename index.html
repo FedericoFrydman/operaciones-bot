@@ -105,6 +105,35 @@
         color: #ffffff !important;
       }
 
+      /* BOTONES RAPIDOS DE METODO */
+      .metodo-quick {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        gap: 6px !important;
+        margin-bottom: 10px !important;
+      }
+      .mq-btn {
+        flex: 1 1 0 !important;
+        min-width: 0 !important;
+        padding: 10px 4px !important;
+        border-radius: 10px !important;
+        border: 2px solid #3a3a3c !important;
+        background-color: #2c2c2e !important;
+        color: #ffffff !important;
+        font-size: 12.5px !important;
+        font-weight: 600 !important;
+        text-align: center !important;
+        cursor: pointer !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+      }
+      .mq-btn.active {
+        border-color: #3390ec !important;
+        background-color: #3390ec !important;
+        color: #ffffff !important;
+      }
+
       .search-container {
         position: relative !important;
       }
@@ -309,11 +338,12 @@
 
       <div class="field z-med">
         <label>Metodo de Pago</label>
+        <div class="metodo-quick" id="metodoQuick"></div>
         <div class="search-container">
           <input
             type="text"
             id="metodoSearch"
-            placeholder="Buscar metodo..."
+            placeholder="Buscar otro metodo..."
             autocomplete="off"
           />
           <div class="search-results" id="metodoResults"></div>
@@ -373,6 +403,26 @@
       var selectedCliente = '';
       var selectedMetodo = '';
       var cola = []; // lista de operaciones acumuladas
+
+      // ============================================================
+      // BOTONES RAPIDOS DE METODO DE PAGO
+      // Estos 4 metodos aparecen como botones para seleccionarlos de
+      // un toque (igual que Envio/Cobro). El resto siguen disponibles
+      // en el buscador de abajo.
+      //
+      // Cada boton tiene:
+      //   texto  = lo que se VE en el boton (corto)
+      //   valor  = lo que se SELECCIONA (debe coincidir EXACTO con la
+      //            planilla)
+      // Si lo dejás vacío ([]), se usan automaticamente los primeros
+      // 4 de la lista de la planilla (texto = valor).
+      // ============================================================
+      var METODOS_RAPIDOS = [
+        { texto: 'T$', valor: 'T$ GG' },
+        { texto: 'C$', valor: 'C$ GG' },
+        { texto: 'GG', valor: 'GG' },
+        { texto: 'UT-L', valor: 'UT-Ledger' },
+      ];
 
       var userId =
         tg.initDataUnsafe && tg.initDataUnsafe.user
@@ -470,8 +520,17 @@
           function (val) {
             selectedMetodo = val;
             hide('metodoError');
+            // Si eligio desde el buscador, apagamos los botones rapidos
+            document
+              .querySelectorAll('#metodoQuick .mq-btn')
+              .forEach(function (b) {
+                b.classList.remove('active');
+              });
           },
         );
+
+        // Construir los botones rapidos de metodo
+        buildMetodoQuick();
 
         var clienteInput = document.getElementById('clienteSearch');
         clienteInput.addEventListener('blur', function () {
@@ -482,6 +541,72 @@
             }
           }, 300);
         });
+      }
+
+      // ============================================================
+      // BOTONES RAPIDOS DE METODO
+      // ============================================================
+      function buildMetodoQuick() {
+        var cont = document.getElementById('metodoQuick');
+        if (!cont) return;
+        cont.innerHTML = '';
+
+        // Elegir que 4 mostrar. Se aceptan strings o {texto, valor}.
+        // Solo se muestran los que existen EXACTO en la planilla.
+        var elegidos = [];
+        if (METODOS_RAPIDOS && METODOS_RAPIDOS.length) {
+          METODOS_RAPIDOS.forEach(function (m) {
+            var texto = typeof m === 'string' ? m : m.texto;
+            var valor = typeof m === 'string' ? m : m.valor;
+            if (listas.metodos.indexOf(valor) >= 0) {
+              elegidos.push({ texto: texto, valor: valor });
+            }
+          });
+        }
+        if (elegidos.length === 0) {
+          elegidos = listas.metodos.slice(0, 4).map(function (v) {
+            return { texto: v, valor: v };
+          });
+        }
+        elegidos = elegidos.slice(0, 4);
+
+        if (elegidos.length === 0) {
+          cont.style.display = 'none';
+          return;
+        }
+        cont.style.display = 'flex';
+
+        elegidos.forEach(function (m) {
+          var btn = document.createElement('div');
+          btn.className = 'mq-btn';
+          btn.textContent = m.texto;
+          btn.title = m.valor;
+          btn.onclick = function () {
+            seleccionarMetodoRapido(m.valor, btn);
+          };
+          cont.appendChild(btn);
+        });
+      }
+
+      function seleccionarMetodoRapido(metodo, btnEl) {
+        selectedMetodo = metodo;
+
+        // Marcar este boton como activo (y apagar los demas)
+        document
+          .querySelectorAll('#metodoQuick .mq-btn')
+          .forEach(function (b) {
+            b.classList.remove('active');
+          });
+        if (btnEl) btnEl.classList.add('active');
+
+        // Resetear la seleccion hecha por el buscador (chip + input)
+        var input = document.getElementById('metodoSearch');
+        input.value = '';
+        input.style.display = 'block';
+        document.getElementById('metodoResults').classList.remove('active');
+        document.getElementById('metodoSelected').innerHTML = '';
+
+        hide('metodoError');
       }
 
       // ============================================================
@@ -636,6 +761,11 @@
         document.getElementById('metodoSearch').value = '';
         document.getElementById('metodoSearch').style.display = 'block';
         document.getElementById('metodoSelected').innerHTML = '';
+        document
+          .querySelectorAll('#metodoQuick .mq-btn')
+          .forEach(function (b) {
+            b.classList.remove('active');
+          });
 
         // Notas
         document.getElementById('notas').value = '';
